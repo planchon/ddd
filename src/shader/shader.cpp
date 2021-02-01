@@ -66,3 +66,7 @@ void ShaderProgram::link() {
         glDeleteShader(shader.get_id());
     }
 }
+
+int ShaderProgram::get_id() {
+    return this->shader_program_id;
+}

@@ -31,6 +31,7 @@ public:
     ShaderProgram();
     void addShader(Shader shader);
     void link();
+    int get_id();
 
 private:
     unsigned int shader_program_id;

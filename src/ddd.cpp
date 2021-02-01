@@ -31,7 +31,7 @@ int main() {
     // set the callback for the screen resize event
     glfwSetFramebufferSizeCallback(window, screen_resize_callback);
 
-    RGBA screenColor = RGBA(155, 250, 200, 255);
+    RGBA screenColor = RGBA(0, 0, 0, 255);
 
     // basic triangle
     float vertices[] = {
@@ -41,27 +41,46 @@ int main() {
     };
 
     ShaderProgram sp;
-    Shader vertex = Shader("../shaders/vertex.glsl", GL_VERTEX_SHADER);
-    Shader frag = Shader("../shaders/fragments.glsl", GL_VERTEX_SHADER);
+    Shader vertex = Shader("shaders/vertex.glsl", GL_VERTEX_SHADER);
+    Shader frag = Shader("shaders/fragments.glsl", GL_FRAGMENT_SHADER);
+
     sp.addShader(vertex);
     sp.addShader(frag);
 
     sp.link();
 
-    // vertex buffer object
-    unsigned int VBO;
+    unsigned int VAO, VBO;
+    glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
+
+    glBindVertexArray(VAO);
+
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+
     while(!glfwWindowShouldClose(window)) {
         processInput(window);
-
+        
         clearScreen(&screenColor);
+
+        glUseProgram(sp.get_id());
+        glBindVertexArray(VAO);
+        glDrawArrays(GL_TRIANGLES, 0, 3);
+
 
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
+
+    glDeleteVertexArrays(1, &VAO);
+    glDeleteBuffers(1, &VBO);
+    glDeleteProgram(sp.get_id());
 
     glfwTerminate();
     return 0;
