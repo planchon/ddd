@@ -7,17 +7,24 @@
 #include "glad/glad.h"
 #include <GLFW/glfw3.h>
 
+#include "stb/stb_image.h"
+
+using namespace std;
+
 class Texture {
 public:
+    string path;
+    unsigned int texture_id;
+    string type;
+    int width, height, chanels;
+    unsigned char* data;
+
+    Texture();
     Texture(char* texturePath);
     int get_id();
-    std::string get_type();
-
-private:
-    int width, height, chanels;
-    unsigned int texture_id;
-    unsigned char* data;
-    std::string type;
+    string get_type();    
 };
+
+
 
 #endif

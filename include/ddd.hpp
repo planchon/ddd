@@ -15,6 +15,7 @@
 #include "texture.hpp"
 #include "camera.hpp"
 #include "math.hpp"
+#include "model.hpp"
 
 #endif
 

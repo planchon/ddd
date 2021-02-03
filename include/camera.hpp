@@ -13,25 +13,39 @@
 class Camera {
 public:
     Camera();
-    Camera(glm::vec3 position, glm::vec3 target);
-    glm::mat4 get_proj();
-    glm::mat4 get_view();
-    void look_at(glm::vec3 look_at);
-    void orbit(glm::vec3 pos, float radius = 10.0f);
+    Camera(vec3 position, vec3 target);
+    mat4 get_proj();
+    mat4 get_view();
+    void look_at(vec3 look_at);
+    void orbit(vec3 pos, float radius = 10.0f);
+    void processMouseMovement(float xoffset, float yoffset, GLboolean constrainPitch = true);
+    void mouse_callback(double xpos, double ypos);
+    void keyboard_callback(GLFWwindow* window);
 private:
-    glm::mat4 proj;
-    glm::mat4 view;
+    float MouseSensibility = 0.1f;
+    float yaw = -90.0f;
+    float pitch = 0.0f;
+    float lastMousex = 400;
+    float lastMousey = 300;
+    float cameraSpeed = 1.0f;
+    bool firstMouse = true;
 
-    glm::vec3 position;
-    glm::vec3 target;
-    glm::vec3 direction;
-    glm::vec3 cameraRight;
-    glm::vec3 up;
+    mat4 proj;
+    mat4 view;
+    
+    vec3 position;
+    vec3 target;
+    vec3 direction;
+    vec3 cameraRight;
+    vec3 up;
+    vec3 worldUp = vec3(0.0f, 1.0f, 0.0f);
 
     float fov;
     float screen_width, screen_height;
     float zNear;
     float zFar;
+
+    void updateCamera();
 };
 
 #endif

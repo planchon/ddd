@@ -1,13 +1,9 @@
 #include "../../include/camera.hpp"
 
 Camera::Camera() {
-    this->target    = glm::vec3(1.0f, 0.0f, 0.0f);
-    this->position  = glm::vec3(0, 0.0f, 0);
-    this->direction = glm::vec3(1.0f, 0.0f, 1.0f);
-
-    this->direction   = glm::normalize(this->position - this->target);
-    this->cameraRight = glm::normalize(glm::cross(glm::vec3(0.0f, 1.0f, 0.0f), this->direction));
-    this->up          = glm::cross(this->direction, this->cameraRight);
+    this->target    = vec3(0.0f, 0.0f, -1.0f);
+    this->position  = vec3(0.0f, 0.0f, 0.0f);
+    this->up        = vec3(0.0f, 1.0f, 0.0f);
 
     this->fov           = 45.0f;
     this->screen_height = 600.0f;
@@ -16,12 +12,15 @@ Camera::Camera() {
     this->zFar         = 100.0f;
 
     this->proj = glm::perspective(glm::radians(this->fov), (float) this->screen_width / (float) this->screen_height, this->zNear, this->zFar);
-    this->view = glm::mat4(1.0f);
-    this->view = glm::translate(this->view, this->position);
+
+    this->updateCamera();
 }
 
-void Camera::look_at(glm::vec3 look_at) {
-    this->view = glm::lookAt(this->position, look_at, this->up);  
+Camera::Camera(glm::vec3 position, glm::vec3 target) : Camera::Camera() {
+    this->position = position;
+    this->target   = target;
+
+    this->updateCamera();    
 }
 
 // make the cam orbit around pos
@@ -32,19 +31,69 @@ void Camera::orbit(glm::vec3 pos, float radius) {
     this->view = glm::lookAt(this->position + glm::vec3(camX, 0.0, camZ), pos, glm::vec3(0.0f, 1.0f, 0.0f));  
 }
 
-Camera::Camera(glm::vec3 position, glm::vec3 target) : Camera::Camera() {
-    this->position = position;
-    this->target   = target;
-
-    this->view = glm::translate(this->view, this->position);
-    this->look_at(target);
-    
-}
-
 glm::mat4 Camera::get_view() {
-    return this->view;
+    return lookAt(this->position, this->position + this->target, this->up);
 }
 
 glm::mat4 Camera::get_proj() {
     return this->proj;
+}
+
+void Camera::processMouseMovement(float xoffset, float yoffset, GLboolean constrainPitch) {
+    xoffset *= this->MouseSensibility;
+    yoffset *= this->MouseSensibility;
+
+    this->yaw   += xoffset;
+    this->pitch += yoffset;
+
+    if (constrainPitch) {
+        if (this->pitch > 89.0f)
+            this->pitch = 89.0f;
+        if (this->pitch < -89.0f)
+            this->pitch = -89.0f;
+    }
+
+    this->updateCamera();
+}
+
+void Camera::updateCamera() {
+    vec3 front;
+    front.x = cos(radians(this->yaw)) * cos(radians(this->pitch));
+    front.y = sin(radians(this->pitch));
+    front.z = sin(radians(this->yaw)) * cos(radians(this->pitch));
+    this->target = normalize(front);
+
+    this->cameraRight = normalize(cross(this->target, this->worldUp));
+    this->up = normalize(cross(this->cameraRight, this->target));
+}
+
+void Camera::mouse_callback(double xpos, double ypos) {
+    if (this->firstMouse) {
+        this->lastMousex = xpos;
+        this->lastMousey = ypos;
+        this->firstMouse = false;
+    }
+
+    float xoffset = xpos - this->lastMousex;
+    float yoffset = this->lastMousey - ypos;
+
+    this->lastMousex = 400;
+    this->lastMousey = 300;
+
+    this->processMouseMovement(xoffset, yoffset);
+}
+
+void Camera::keyboard_callback(GLFWwindow* window) {
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+        this->position += this->target * this->cameraSpeed;
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+        this->position -= this->target * this->cameraSpeed;
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+        this->position -= this->cameraRight * this->cameraSpeed;
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+        this->position += this->cameraRight * this->cameraSpeed;
+    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
+        this->position += this->worldUp * this->cameraSpeed;
+    if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS)
+        this->position -= this->worldUp * this->cameraSpeed;
 }

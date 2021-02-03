@@ -24,6 +24,8 @@ Texture::Texture(char* texturePath) {
     stbi_image_free(this->data);
 }
 
+Texture::Texture() {}
+
 int Texture::get_id() {
     return this->texture_id;
 }
