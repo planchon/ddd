@@ -12,6 +12,7 @@ int main() {
 
     // creation de la fenetre
     GLFWwindow* window = glfwCreateWindow(800, 600, "ddd", NULL, NULL);
+
     if (window == NULL) {
         cout << "failed creating the GLFW window" << endl;
         glfwTerminate();
@@ -19,37 +20,74 @@ int main() {
     }
 
     glfwMakeContextCurrent(window);
-
+    
+    // set the callback for the screen resize event
+    glfwSetFramebufferSizeCallback(window, screen_resize_callback);
+    
     // load de GLAD
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
         cout << "Failed to initialize GLAD" << endl;
         return -1;
     } 
 
-    glViewport(0,0,800,600);
-
-    // set the callback for the screen resize event
-    glfwSetFramebufferSizeCallback(window, screen_resize_callback);
+    // openGL parameters
+    glEnable(GL_DEPTH_TEST);
 
     RGBA screenColor = RGBA(0, 0, 0, 255);
 
-    // basic triangle
+    // float vertices[] = {
+    //     // positions          // colors           // texture coords
+    //      0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f,   // top right
+    //      0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f,   // bottom right
+    //     -0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f,   // bottom left
+    //     -0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f    // top left 
+    // };
+
     float vertices[] = {
-        -0.5f, -0.5f, 0,
-         0.5f, -0.5f, 0,
-            0,  0.5f, 0
+        -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+         0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
+         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+
+        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+         0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+         0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+         0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+        -0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
+        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+
+        -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+        -0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+        -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+         0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+         0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+         0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+         0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
+         0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+         0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+
+        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+        -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
+        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
     };
 
-    ShaderProgram sp;
-    Shader vertex = Shader("shaders/vertex.glsl", GL_VERTEX_SHADER);
-    Shader frag = Shader("shaders/fragments.glsl", GL_FRAGMENT_SHADER);
-
-    sp.addShader(vertex);
-    sp.addShader(frag);
-
-    sp.link();
-
-    unsigned int VAO, VBO;
+    unsigned int VBO, VAO;
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
 
@@ -58,21 +96,61 @@ int main() {
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    // position attribute
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
+    // texture coord attribute
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
 
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
+    // Shader triangleShader = Shader("shaders/triangle/vertex.glsl", "shaders/triangle/fragments.glsl");
+    Shader camShader = Shader("shaders/camera_test/vertex.glsl", "shaders/camera_test/fragments.glsl");
+    Texture textureBois = Texture("assets/container.jpg");
+    Camera cam = Camera(glm::vec3(0,0,-10.0f), glm::vec3(0.0f, 0.0f, 0.0f));
+
+    glm::mat4 model = glm::mat4(1.0f);
+    model = glm::translate(model, glm::vec3(0.0f, 1.0f, 0.0f));
+    camShader.use();
+    glm::vec3 cube;
+
+    glm::vec3 cubePositions[] = {
+        glm::vec3( 0.0f,  0.0f,  0.0f), 
+        glm::vec3( 2.0f,  5.0f, -15.0f), 
+        glm::vec3(-1.5f, -2.2f, -2.5f),  
+        glm::vec3(-3.8f, -2.0f, -12.3f),  
+        glm::vec3( 2.4f, -0.4f, -3.5f),  
+        glm::vec3(-1.7f,  3.0f, -7.5f),  
+        glm::vec3( 1.3f, -2.0f, -2.5f),  
+        glm::vec3( 1.5f,  2.0f, -2.5f), 
+        glm::vec3( 1.5f,  0.2f, -1.5f), 
+        glm::vec3(-1.3f,  1.0f, -1.5f)  
+    };
 
     while(!glfwWindowShouldClose(window)) {
         processInput(window);
-        
+
         clearScreen(&screenColor);
 
-        glUseProgram(sp.get_id());
-        glBindVertexArray(VAO);
-        glDrawArrays(GL_TRIANGLES, 0, 3);
+        camShader.use();
+        cube = glm::vec3(cos((float) glfwGetTime()), sin((float) glfwGetTime()), -5.0f);
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, cube);
+        cam.look_at(cube);
+        // cam.orbit(glm::vec3(0.0f, 0.0f, 0.0f), 5);
 
+        camShader.set("view", cam.get_view());
+        camShader.set("model", model);
+        camShader.set("proj", cam.get_proj());
+                
+        glBindVertexArray(VAO);
+        glDrawArrays(GL_TRIANGLES, 0, 36);
+
+        for (glm::vec3 vec : cubePositions) {
+            glm::mat4 model = glm::mat4(1.0f);
+            model = glm::translate(model, vec);
+            camShader.set("model", model);
+            glDrawArrays(GL_TRIANGLES, 0, 36);
+        }
 
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -80,8 +158,8 @@ int main() {
 
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
-    glDeleteProgram(sp.get_id());
 
     glfwTerminate();
+    std::cout << "ddd closing" << std::endl;
     return 0;
 }

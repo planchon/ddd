@@ -6,39 +6,23 @@
 #include <string>
 #include <vector>
 
-#include "../include/glad/glad.h"
+#include "glad/glad.h"
 #include <GLFW/glfw3.h>
+
+#include "math.hpp"
 
 class Shader {
 public:
     bool has_compiled;
+    unsigned int program_id;
 
-    Shader(const char* shaderLocation, GLenum shader_type);
-    void compile();
-    int get_id();
+    Shader(const char* vertexShaderPath, const char* fragmentShaderPath);
+    void use();
 
-private:
-    const char* shader_source_code;
-    unsigned int shader_id;
-    int compile_sucess;
-    char compile_log[2048];
-};
-
-class ShaderProgram {
-public:
-    bool link_success;
-
-    ShaderProgram();
-    void addShader(Shader shader);
-    void link();
-    int get_id();
-
-private:
-    unsigned int shader_program_id;
-    std::vector<Shader> shaders;
-
-    int link_sucess;
-    char link_log[2048];
+    void set(const std::string &name, bool value);
+    void set(const std::string &name, int value);
+    void set(const std::string &name, float value);
+    void set(const std::string &name, glm::mat4 value);
 };
 
 #endif

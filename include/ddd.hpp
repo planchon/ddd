@@ -5,13 +5,16 @@
 #include <stdlib.h>
 #include <iostream>
 
-#include "../include/glad/glad.h"
+#include "glad/glad.h"
 #include <GLFW/glfw3.h>
 
-#include "../include/screen.hpp"
-#include "../include/inputs.hpp"
-#include "../include/color.hpp"
-#include "../include/shader.hpp"
+#include "screen.hpp"
+#include "inputs.hpp"
+#include "color.hpp"
+#include "shader.hpp"
+#include "texture.hpp"
+#include "camera.hpp"
+#include "math.hpp"
 
 #endif
 
