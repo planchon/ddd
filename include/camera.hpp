@@ -12,6 +12,8 @@
 
 class Camera {
 public:
+    bool isGUIInteracting = false;
+
     Camera();
     Camera(vec3 position, vec3 target);
     mat4 get_proj();
@@ -19,7 +21,7 @@ public:
     void look_at(vec3 look_at);
     void orbit(vec3 pos, float radius = 10.0f);
     void processMouseMovement(float xoffset, float yoffset, GLboolean constrainPitch = true);
-    void mouse_callback(double xpos, double ypos);
+    void mouse_callback(GLFWwindow* window, double xpos, double ypos);
     void keyboard_callback(GLFWwindow* window);
 private:
     float MouseSensibility = 0.1f;

@@ -67,20 +67,24 @@ void Camera::updateCamera() {
     this->up = normalize(cross(this->cameraRight, this->target));
 }
 
-void Camera::mouse_callback(double xpos, double ypos) {
-    if (this->firstMouse) {
-        this->lastMousex = xpos;
-        this->lastMousey = ypos;
-        this->firstMouse = false;
+void Camera::mouse_callback(GLFWwindow* window, double xpos, double ypos) {
+    if (!this->isGUIInteracting) {
+        if (this->firstMouse) {
+            this->lastMousex = xpos;
+            this->lastMousey = ypos;
+            this->firstMouse = false;
+        }
+
+        float xoffset = xpos - this->lastMousex;
+        float yoffset = this->lastMousey - ypos;
+
+        this->lastMousex = 400;
+        this->lastMousey = 300;
+
+        this->processMouseMovement(xoffset, yoffset);
+
+        glfwSetCursorPos(window, 400, 300);
     }
-
-    float xoffset = xpos - this->lastMousex;
-    float yoffset = this->lastMousey - ypos;
-
-    this->lastMousex = 400;
-    this->lastMousey = 300;
-
-    this->processMouseMovement(xoffset, yoffset);
 }
 
 void Camera::keyboard_callback(GLFWwindow* window) {
@@ -94,6 +98,9 @@ void Camera::keyboard_callback(GLFWwindow* window) {
         this->position += this->cameraRight * this->cameraSpeed;
     if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
         this->position += this->worldUp * this->cameraSpeed;
-    if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS)
+    if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
         this->position -= this->worldUp * this->cameraSpeed;
+    if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
+        this->isGUIInteracting = !this->isGUIInteracting;
+    }
 }

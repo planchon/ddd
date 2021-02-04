@@ -3,6 +3,7 @@
 using namespace std;
 
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
+static void ShowExampleAppSimpleOverlay(bool* p_open);
 
 Camera cam = Camera(glm::vec3(0,0,3.0f), glm::vec3(0.0f, 0.0f, 0.0f));
 
@@ -13,6 +14,8 @@ int main() {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    glfwWindowHint(GLFW_DOUBLEBUFFER, GL_TRUE);
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
     // creation de la fenetre
     GLFWwindow* window = glfwCreateWindow(800, 600, "ddd", NULL, NULL);
@@ -24,12 +27,7 @@ int main() {
     }
 
     glfwMakeContextCurrent(window);
-    
-    // set the callback for the screen resize event
-    glfwSetFramebufferSizeCallback(window, screen_resize_callback);
-    glfwSetCursorPosCallback(window, mouse_callback);
-    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
-    
+    glfwSwapInterval(1); // vsync ?
 
     // load de GLAD
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
@@ -40,114 +38,40 @@ int main() {
     // openGL parameters
     glEnable(GL_DEPTH_TEST);
 
+    // set the callback for the screen resize event
+    glfwSetFramebufferSizeCallback(window, screen_resize_callback);
+    glfwSetCursorPosCallback(window, mouse_callback);
+
+    //imgui
+    ImGui::CreateContext();
+    // ImGuiIO &io = ImGui::GetIO();
+    // Setup Platform/Renderer bindings
+    ImGui_ImplGlfw_InitForOpenGL(window, true);
+    ImGui_ImplOpenGL3_Init();
+
+    // Setup Dear ImGui style
+    ImGui::StyleColorsDark();
+
     RGBA screenColor = RGBA(0, 0, 150, 255);
 
-    // float vertices[] = {
-    //     // positions          // colors           // texture coords
-    //      0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f,   // top right
-    //      0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f,   // bottom right
-    //     -0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f,   // bottom left
-    //     -0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f    // top left 
-    // };
-
-    float vertices[] = {
-        -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
-         0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
-         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
-
-        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-         0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-         0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-         0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-        -0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
-        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-
-        -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-        -0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-        -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-
-         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-         0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-         0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-         0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-
-        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-         0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
-         0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-         0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-
-        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-        -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
-        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
-    };
-
-    unsigned int VBO, VAO;
-    glGenVertexArrays(1, &VAO);
-    glGenBuffers(1, &VBO);
-
-    glBindVertexArray(VAO);
-
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-    // position attribute
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-    // texture coord attribute
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
-    glEnableVertexAttribArray(1);
-
-    // Shader triangleShader = Shader("shaders/triangle/vertex.glsl", "shaders/triangle/fragments.glsl");
-    // Shader camShader = Shader("shaders/shaderv2/vertex.glsl", "shaders/shaderv2/frag.glsl");
     Shader camShader = Shader("shaders/camera_test/vertex.glsl", "shaders/camera_test/fragments.glsl");
-    Texture textureBois = Texture("assets/container.jpg");
 
     // std::string modelPath("assets/monkey/suzanne.obj");
-    std::string modelPath("assets/backpack/backpack.obj");
-    Model test = Model(modelPath);
+    Model test = Model(std::string("assets/backpack/backpack.obj"));
+    Model test2 = Model(std::string("assets/monkey/suzanne.obj"));
 
-    camShader.use();
-
-    glm::vec3 cubePositions[] = {
-        glm::vec3( 5.0f,  5.0f,  5.0f), 
-        glm::vec3( 2.0f,  5.0f, -15.0f), 
-        glm::vec3( 0.0f,  5.0f,  2.0f),
-        glm::vec3(-1.5f, -2.2f, -2.5f),  
-        glm::vec3(-3.8f, -2.0f, -12.3f),  
-        glm::vec3( 2.4f, -0.4f, -3.5f),  
-        glm::vec3(-1.7f,  3.0f, -7.5f),  
-        glm::vec3( 1.3f, -2.0f, -2.5f),  
-        glm::vec3( 1.5f,  2.0f, -2.5f), 
-        glm::vec3( 1.5f,  0.2f, -1.5f), 
-        glm::vec3(-1.3f,  1.0f, -1.5f)  
-    };
-
-    vec3 cube;
-    mat4 model;
+    bool overlay_open = true;
 
     while(!glfwWindowShouldClose(window)) {
+        glfwPollEvents();
+
+        // process des inputs
         processInput(window);
         cam.keyboard_callback(window);
 
         clearScreen(&screenColor);
 
         camShader.use();
-        // cube = glm::vec3(cos((float) glfwGetTime()), sin((float) glfwGetTime()), -5.0f);
-        // model = glm::mat4(1.0f);
-        // model = glm::translate(model, cube);
 
         camShader.set("view", cam.get_view());
         camShader.set("proj", cam.get_proj());
@@ -159,29 +83,59 @@ int main() {
         camShader.set("model", model);
         test.render(camShader);
 
-        // rendu des cubes moches
-        glBindVertexArray(VAO);
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, glm::vec3(10.0f, 10.0f, 0.0f)); // translate it down so it's at the center of the scene
+        model = glm::scale(model, glm::vec3(2.0f, 2.0f, 2.0f));	
+        
+        camShader.set("model", model);
+        test2.render(camShader);
 
-        for (glm::vec3 vec : cubePositions) {
-            glm::mat4 model = glm::mat4(1.0f);
-            model = glm::translate(model, vec);
-            camShader.set("model", model);
-            glDrawArrays(GL_TRIANGLES, 0, 36);
+        if (cam.isGUIInteracting) {
+            ImGui_ImplOpenGL3_NewFrame();
+            ImGui_ImplGlfw_NewFrame();
+            ImGui::NewFrame();
+
+            ShowExampleAppSimpleOverlay(&overlay_open);
+
+            ImGui::Render();
+            ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
         }
 
         glfwSwapBuffers(window);
-        glfwPollEvents();
     }
 
-    // glDeleteVertexArrays(1, &VAO);
-    // glDeleteBuffers(1, &VBO);
+    // Cleanup
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
+
+    glfwDestroyWindow(window);
 
     glfwTerminate();
     std::cout << "ddd closing" << std::endl;
     return 0;
 }
 
+static void ShowExampleAppSimpleOverlay(bool* p_open)
+{
+    const float DISTANCE = 10.0f;
+    static int corner = 0;
+    ImGuiIO& io = ImGui::GetIO();
+    ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
+    window_flags |= ImGuiWindowFlags_NoMove;
+        ImVec2 window_pos = ImVec2((corner & 1) ? io.DisplaySize.x - DISTANCE : DISTANCE, (corner & 2) ? io.DisplaySize.y - DISTANCE : DISTANCE);
+        ImVec2 window_pos_pivot = ImVec2((corner & 1) ? 1.0f : 0.0f, (corner & 2) ? 1.0f : 0.0f);
+        ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always, window_pos_pivot);
+    ImGui::SetNextWindowBgAlpha(0.35f); // Transparent background
+    if (ImGui::Begin("ddd - statistiques", p_open, window_flags))
+    {
+        ImGui::Text("ddd - statistiques");
+        ImGui::Separator();
+        ImGui::Text("fps: 1000, ticks: 60");
+    }
+    ImGui::End();
+}
+
 void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
-    cam.mouse_callback(xpos, ypos);
-    glfwSetCursorPos(window, 400, 300);
+    cam.mouse_callback(window, xpos, ypos);
 }
