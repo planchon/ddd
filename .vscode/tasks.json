@@ -11,6 +11,10 @@
           "kind": "build",
           "isDefault": true
         },
+        "presentation": {
+          "reveal": "silent",
+          "panel": "new"
+        },
         "problemMatcher": {
           "owner": "cpp",
           "fileLocation": ["relative", "${workspaceFolder}"],
