@@ -8,7 +8,7 @@ static void ShowExampleAppSimpleOverlay(bool* p_open);
 Camera cam = Camera(glm::vec3(0,0,3.0f), glm::vec3(0.0f, 0.0f, 0.0f));
 
 int main() {
-    cout << "ddd launching" << endl;
+    cout << "ddd launching2" << endl;
 
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);

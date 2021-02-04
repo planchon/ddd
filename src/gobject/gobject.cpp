@@ -1,4 +1,4 @@
-#include "gobject.hpp"
+#include "../../include/gobject.hpp"
 
 GObject::GObject(float* vertices, glm::vec3 position) {
     this->position = position;

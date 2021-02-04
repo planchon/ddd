@@ -8,7 +8,7 @@
             "name": "ddd launch",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/test",
+            "program": "${workspaceFolder}/ddd",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
