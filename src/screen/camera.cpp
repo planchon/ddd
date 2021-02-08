@@ -9,16 +9,18 @@ Camera::Camera() {
     this->screen_height = 600.0f;
     this->screen_width  = 800.0f;
     this->zNear         = 0.1f;
-    this->zFar         = 100.0f;
+    this->zFar         = 10000.0f;
 
     this->proj = glm::perspective(glm::radians(this->fov), (float) this->screen_width / (float) this->screen_height, this->zNear, this->zFar);
 
     this->updateCamera();
 }
 
-Camera::Camera(glm::vec3 position, glm::vec3 target) : Camera::Camera() {
+Camera::Camera(glm::vec3 position, glm::vec3 target, unsigned int screen_width, unsigned int screen_height) : Camera::Camera() {
     this->position = position;
     this->target   = target;
+    this->screen_height = screen_height;
+    this->screen_width = screen_width;
 
     this->updateCamera();    
 }

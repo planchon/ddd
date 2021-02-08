@@ -14,9 +14,9 @@ void Mesh::setup() {
     glGenBuffers(1, &this->EBO);
 
     glBindVertexArray(this->VAO);
-    glBindBuffer(GL_ARRAY_BUFFER, this->VBO);
 
-    glBufferData(GL_ARRAY_BUFFER, this->vertices.size() * sizeof(Vertex), &this->vertices[0], GL_STATIC_DRAW);
+    glBindBuffer(GL_ARRAY_BUFFER, this->VBO);
+    glBufferData(GL_ARRAY_BUFFER, this->vertices.size() * sizeof(Vertex), this->vertices.data(), GL_STATIC_DRAW);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->EBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, this->indices.size() * sizeof(unsigned int), &this->indices[0], GL_STATIC_DRAW);
@@ -27,7 +27,7 @@ void Mesh::setup() {
 
     //vertex data
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0,3,GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*) 0);
+    glVertexAttribPointer(0,3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*) 0);
 
     // normal data
     glEnableVertexAttribArray(1);
@@ -59,25 +59,24 @@ void Mesh::render(Shader& shader) {
         string number;
         string name = this->textures[i].get_type();
 
-        if (name == "texture_diffuse") {
+        if (name == "diffuse") {
             number = std::to_string(n_diffuse++);
-        } else if (name == "texture_specular") {
+        } else if (name == "specular") {
             number = std::to_string(n_specular++);
-        } else if (name == "texture_normal") {
+        } else if (name == "normal") {
             number = std::to_string(n_normal++);
-        } else if (name == "texture_height") {
+        } else if (name == "height") {
             number = std::to_string(n_height++);
         }
 
-        shader.set(("material." + name + number).c_str(), i);
         // now set the sampler to the correct texture unit
-        // glUniform1i(glGetUniformLocation(shader.program_id, (name + number).c_str()), i);
-        // // and finally bind the texture
-        // glBindTexture(GL_TEXTURE_2D, this->textures[i].texture_id);
+        glUniform1i(glGetUniformLocation(shader.program_id, (name + number).c_str()), i);
+        // and finally bind the texture
+        glBindTexture(GL_TEXTURE_2D, textures[i].texture_id);
     }
 
-    glBindVertexArray(this->VAO);
-    glDrawElements(GL_TRIANGLES, this->indices.size(), GL_UNSIGNED_INT, 0);
+    glBindVertexArray(VAO);
+    glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
     glBindVertexArray(0);
 
     // reset

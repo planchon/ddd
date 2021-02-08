@@ -13,6 +13,7 @@ void Model::render(Shader& shader) {
 
 void Model::loadModel() {
     Assimp::Importer import;
+    // a ajouter 
     const aiScene* scene = import.ReadFile(this->path, aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
     
     if (!scene || (scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE) || !scene->mRootNode) {
@@ -63,10 +64,11 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene) {
 
         if (mesh->mTextureCoords[0]) {
             glm::vec2 vec;
-            vec.x = mesh->mTextureCoords[0][i].x;
+            vec.x = mesh->mTextureCoords[0][i].x; 
             vec.y = mesh->mTextureCoords[0][i].y;
             vertex.texCoord = vec;
 
+            // pour les textures et les ligths
             vector.x = mesh->mTangents[i].x;
             vector.y = mesh->mTangents[i].y;
             vector.z = mesh->mTangents[i].z;
@@ -93,16 +95,16 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene) {
 
     aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
     
-    vector<Texture> diffuseMaps = loadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse");
+    vector<Texture> diffuseMaps = loadMaterialTextures(material, aiTextureType_DIFFUSE, "diffuse");
     textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
 
-    vector<Texture> specularMaps = loadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular");
+    vector<Texture> specularMaps = loadMaterialTextures(material, aiTextureType_SPECULAR, "specular");
     textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
 
-    vector<Texture> normalMaps = loadMaterialTextures(material, aiTextureType_HEIGHT, "texture_normal");
+    vector<Texture> normalMaps = loadMaterialTextures(material, aiTextureType_HEIGHT, "normal");
     textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
 
-    vector<Texture> heightMaps = loadMaterialTextures(material, aiTextureType_AMBIENT, "texture_height");
+    vector<Texture> heightMaps = loadMaterialTextures(material, aiTextureType_AMBIENT, "height");
     textures.insert(textures.end(), heightMaps.begin(), heightMaps.end());
 
     return Mesh(vertices, indices, textures);
@@ -110,15 +112,18 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene) {
 
 vector<Texture> Model::loadMaterialTextures(aiMaterial* mat, aiTextureType type, string typeName) {
     vector<Texture> textures;
-    for (unsigned int i = 0; i < mat->GetTextureCount(type); i++) {
+    textures.clear();
+    int textureCount = mat->GetTextureCount(type);
+
+    for (unsigned int i = 0; i < textureCount; i++) {
         aiString str;
         mat->GetTexture(type, i, &str);
-
         bool skip = false;
+        
         // check if the texture has not been loaded already
-        for (unsigned int j = 0; j < this->textures.size(); i++) {
-            if (strcmp(this->textures[i].path.data(), str.C_Str())) {
-                textures.push_back(this->textures[i]);
+        for (unsigned int j = 0; j < this->textures_loaded.size(); j++) {
+            if (strcmp(this->textures_loaded[j].path.c_str(), str.C_Str()) == 0) {
+                textures.push_back(this->textures_loaded[j]);
                 skip = true;
                 break;
             }
@@ -127,8 +132,9 @@ vector<Texture> Model::loadMaterialTextures(aiMaterial* mat, aiTextureType type,
         if (!skip) {
             Texture texture;
             texture = this->loadTextureFromFile(str.C_Str(), this->directory);
+            texture.type = typeName;
             textures.push_back(texture);
-            this->textures.push_back(texture);
+            this->textures_loaded.push_back(texture);
         }
     }
 
@@ -139,7 +145,8 @@ Texture Model::loadTextureFromFile(const char* filePath, string directory) {
     string filename = string(filePath);
     filename = directory + "/" + filename;
 
-    Texture texture;    
+    Texture texture;
+    texture.path = filePath;    
     glGenTextures(1, &texture.texture_id);
 
     texture.data = stbi_load(filename.c_str(), &texture.width, &texture.height, &texture.chanels, 0);
@@ -168,12 +175,13 @@ Texture Model::loadTextureFromFile(const char* filePath, string directory) {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-        stbi_image_free(texture.data);
+        
+        cout << "texture loaded (" << filename << ")" << endl;
     } else {
         cout << "error loading texture data from model (" << this->path << ")" << endl;
-        stbi_image_free(texture.data);
     }
 
+    stbi_image_free(texture.data);
+    
     return texture;
 }

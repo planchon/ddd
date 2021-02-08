@@ -15,7 +15,7 @@ public:
     bool isGUIInteracting = false;
 
     Camera();
-    Camera(vec3 position, vec3 target);
+    Camera(vec3 position, vec3 target, unsigned int screen_width, unsigned int screen_height);
     mat4 get_proj();
     mat4 get_view();
     void look_at(vec3 look_at);

@@ -21,7 +21,7 @@ public:
 private:
     string path;
     vector<Mesh> meshes;
-    vector<Texture> textures;
+    vector<Texture> textures_loaded;
     string directory;
 
     void loadModel();
